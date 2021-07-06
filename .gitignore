@@ -58,3 +58,11 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+
+.idea/.idea.Project-Planner/.idea/
+
+Assets/Project Planner/Editor/Data/
+
+Project Planner/Data.json
+
+Assets/Project Planner/Editor/Data.meta
