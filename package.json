@@ -2,7 +2,7 @@
 	"name": "id.instance.projectplanner",
 	"version": "1.5.0",
 	"githubUrl": "https://github.com/instance-id/Project-Planner",
-	"displayName": "instance.id.projectplanner",
+	"displayName": "id.instance.projectplanner",
 	"repositoryName": "Project-Planner",
 	"description": "A planning tool for Unity inside the editor. ",
 	"type": "library",
