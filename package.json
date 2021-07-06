@@ -1,0 +1,35 @@
+{
+	"name": "id.instance.projectplanner",
+	"version": "1.5.0",
+	"githubUrl": "https://github.com/instance-id/Project-Planner",
+	"displayName": "instance.id.projectplanner",
+	"repositoryName": "Project-Planner",
+	"description": "A planning tool for Unity inside the editor. ",
+	"type": "library",
+	"unity": "2019.4",
+	"hideInEditor": false,
+	"keywords": [
+		"Project",
+		"Planning",
+		"Project Planning",
+		"Project Organization",
+		"Game Design",
+		"trello-like",
+		"Cards"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/instance-id/Project-Planner.git"
+	},
+	"author": {
+		"name": "instance.id",
+		"email": "dan@instance.id",
+		"url": "https://github.com/instance-id",
+		"twitter": "instance_id",
+		"github": "instance-id"
+	},
+	"//": [
+		"Original by: LeviMooreDev : https://github.com/LeviMooreDev",
+		"Forked From: https://github.com/LeviMooreDev/Project-Planner"
+	]
+}
