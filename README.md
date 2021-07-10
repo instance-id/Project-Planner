@@ -19,11 +19,11 @@ Before installing Project Planner, make sure asset serialization mode is set to 
 | "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git?path=Assets/Project Planner", |   
 | "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git#upm",|   
 
-To install Project Planner you can either download the entire project from GitHub and copy the Project Planner root folder into your own Assets folder. You can also (recommended) download the [`Project Planner 1.5.unitypackage`](https://github.com/LeviMooreDev/Project-Planner/blob/master/Project%20Planner%201.5.unitypackage) file and import that into your unity project.
+To install Project Planner you can either download the entire project from GitHub and copy the Project Planner root folder into your own Assets folder. You can also (recommended) download the [`Project Planner 1.5.unitypackage`](https://github.com/instance-id/Project-Planner/blob/master/Project%20Planner%201.5.unitypackage) file and import that into your unity project.
 
 <!-- Manual -->
 # Manual
-You can find a manual under [`Assets->Project Planner->Manual.pdf`](https://github.com/LeviMooreDev/Project-Planner/blob/master/Assets/Project%20Planner/Manual.pdf). I have tried to be very thorough with it so be sure to check it out first if you have a question.
+You can find a manual under [`Assets->Project Planner->Manual.pdf`](https://github.com/instance-id/Project-Planner/blob/master/Assets/Project%20Planner/Manual.pdf). I have tried to be very thorough with it so be sure to check it out first if you have a question.
 
 <!-- Store Description -->
 # Original Store Description
