@@ -2,6 +2,9 @@
 	<h1 align="center"> Project Planner</h1>
 </p>
 
+### Note: The original repo is mentioned to no longer be maintained, but I plan on trying to maintain this fork as best I can for my own use. As such I have converted the project to now work as a UPM package.
+---
+
 While studying computer science I created a planning tool named Project Planner for Unity and sold it on the Asset Store. Now that I am done studying and getting a job I have decided to release it for free. I have removed some features that required me to have servers running and some that was never used by anyone.
 
 I don't plan to actively work on it anymore, but still feel free to contact me or create an issue if you have questions or suggestions. Hope you find it useful for planning your next game in Unity or just learning from it.
@@ -13,11 +16,11 @@ I don't plan to actively work on it anymore, but still feel free to contact me o
 # How to install
 Before installing Project Planner, make sure asset serialization mode is set to “Force Text”. You can find the setting here “Edit->Project Settings->Editor->Asset Serialization”.
 
-| Install via Unity Package Manager (UPM) | 
+| Install via Unity Package Manager (UPM) |
 |---|
-| Add either of these to project manifest.json file | 
-| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git?path=Assets/Project Planner", |   
-| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git#upm",|   
+| Add either of these to project manifest.json file |
+| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git?path=Assets/Project Planner", |
+| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git#upm",|
 
 To install Project Planner you can either download the entire project from GitHub and copy the Project Planner root folder into your own Assets folder. You can also (recommended) download the [`Project Planner 1.5.unitypackage`](https://github.com/instance-id/Project-Planner/blob/master/Project%20Planner%201.5.unitypackage) file and import that into your unity project.
 
