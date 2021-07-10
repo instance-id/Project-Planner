@@ -3,6 +3,8 @@
 </p>
 
 ### Note: The original repo is mentioned to no longer be maintained, but I plan on trying to maintain this fork as best I can for my own use. As such I have converted the project to now work as a UPM package.
+
+### Below you will find the original description and information from [LeviMooreDev/Project-Planner](https://github.com/LeviMooreDev/Project-Planner)
 ---
 
 While studying computer science I created a planning tool named Project Planner for Unity and sold it on the Asset Store. Now that I am done studying and getting a job I have decided to release it for free. I have removed some features that required me to have servers running and some that was never used by anyone.
