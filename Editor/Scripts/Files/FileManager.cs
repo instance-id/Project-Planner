@@ -13,68 +13,52 @@ namespace ProjectPlanner
     [InitializeOnLoad]
     public static class FileManager
     {
+        const string LocatorSearch = "t:ProjectPlannerLocator ProjectPlannerLocator";
+        private static ProjectPlannerLocator locator;
+
         private static string RootFolder
         {
             get
             {
-                //the key used to save the root folder location.
+                // -- The key used to save the root folder location.
                 string key = "root_folder";
 
-                //the assets folder
-                string applicationPath = Environment.CurrentDirectory;
-
-                //name of the file used to locate the root folder.
-
-                //get the last location we found the locator file in.
+                // -- Get the last location we found the locator file in.
                 string path = Prefs.GetString(key);
+                // if (!string.IsNullOrEmpty(path)) return path;
 
-                //if the locator file cannot be found the root folder has been moved and we try to find it again.
-                if (!File.Exists(path + locatorFileName))
+                // -- If locator is null, attempt to load it from last known location.
+                // -- If it does not exist there, attempt to search the project for it.
+                // -- If it is still not found, create a new ProjectPlannerLocator.
+                if (!locator)
                 {
-                    string[] files = Directory.GetFiles(applicationPath, locatorFileName, SearchOption.AllDirectories);
-                    if (files.Length == 0)
-                    {
-                        if (UI.Utilities.Dialog("Missing File", "Locator file is missing. You can find more information about the locator file in the manual.", "Create Missing File", "Ignore"))
-                        {
-                            CreateDefaultLocatorFile();
-                        }
-                        else
-                        {
-                            BoardWindow.CloseWindow();
-                            TaskWindow.CloseWindow();
-                        }
-                    }
-                    else
-                    {
-                        if (files.Length > 1)
-                        {
-                            UI.Utilities.Dialog("Duplicate Files", "More than one locator file exists. If you are not sure how to fix this problem please look in the manual or contact us.", "OK");
-                        }
+                    if (!string.IsNullOrEmpty(path))
+                        locator = AssetDatabase.LoadAssetAtPath<ProjectPlannerLocator>(path);
 
-                        path = files[0];
-
-                        //remove locator file and project folder path so we only have the local path left
-                        path = path.Remove(0, applicationPath.Length + 1);
-                        path = path.Replace(locatorFileName, "");
-
-                        //save the location of the locator file, so we don't have to search for it again next time.
-                        Prefs.SetString(key, path);
-                    }
+                    if (!locator) locator = LocatorSearch.FindAsset<ProjectPlannerLocator>();
+                    if (!locator) CreateDefaultLocatorFile();
                 }
 
+                if (path == locator.AssetPath) return path;
+
+                path = locator.AssetPath;
+                Prefs.SetString(key, path);
                 return path;
             }
         }
 
-        private static readonly string locatorFileName = "project_planner_locator";
-        public static readonly string DataFolder = RootFolder + "Editor/Data/";
-        private static readonly string IconsFolder = RootFolder + "Editor/Icons/";
-        public static readonly string Manual = RootFolder + "Manual.pdf";
+        private static readonly string locatorFileName = "ProjectPlannerLocator.asset";
+
+        // -- Path.Combine automatically uses the correct path separator cross-platform
+        public static readonly string DataFolder = Path.Combine(RootFolder, "Editor", "Data");
+        private static readonly string IconsFolder = Path.Combine(locator.IsPackage ? locator.PackagePath : RootFolder, "Editor", "Icons");
+        public static readonly string Manual = Path.Combine(locator.IsPackage ? locator.PackagePath : RootFolder, "Manual.pdf");
+
         public static string ProjectFolderPath
         {
             get
             {
-                string path = Environment.CurrentDirectory + "/Project Planner/";
+                string path = Path.Combine(Environment.CurrentDirectory, "Project Planner");
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
@@ -82,17 +66,12 @@ namespace ProjectPlanner
                 return path;
             }
         }
-        public static string JsonFile
-        {
-            get
-            {
-                return ProjectFolderPath + "Data.json";
-            }
-        }
+
+        public static string JsonFile => Path.Combine(ProjectFolderPath, "Data.json");
+
         public static string ScreenshotsFolder(string taskId)
         {
-            string path = ProjectFolderPath + "Screenshots/" + taskId + "/";
-
+            string path = Path.Combine(ProjectFolderPath, "Screenshots", taskId);
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
@@ -113,32 +92,32 @@ namespace ProjectPlanner
             ClearSceenshotTmp();
         }
 
-        private static void ValidateFolder(string folder)
+        private static void ValidateFolder(string folder, bool isPackage = false)
         {
             try
             {
                 int place = Application.dataPath.LastIndexOf("Assets");
+
                 string fullPath = Application.dataPath.Remove(place, "Assets".Length).Insert(place, folder);
-
                 if (!Directory.Exists(fullPath))
+                {
                     Directory.CreateDirectory(fullPath);
-
-                AssetDatabase.Refresh();
+                    AssetDatabase.Refresh();
+                }
             }
-            catch (Exception)
-            {
-
-            }
+            catch (Exception) { }
         }
+
         public static void CreateDefaultLocatorFile()
         {
-            string filePath = Application.dataPath + "/" + Info.Name + "/" + locatorFileName;
-            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            }
+            string filePath = PathTools.IsPackage 
+                ? Path.Combine(PathTools.Path, PathTools.ProjectName, locatorFileName) 
+                : Path.Combine(PathTools.Path, locatorFileName);
 
-            File.WriteAllText(filePath, "");
+            if (filePath.StartsWith(Application.dataPath))
+                filePath = "Assets/" + filePath.Substring(Application.dataPath.Length);
+
+            locator = AssetTools.CreateAssetOfType<ProjectPlannerLocator>(locatorFileName, filePath);
         }
 
         public static T GetFile<T>(string name) where T : FileBase
@@ -146,22 +125,22 @@ namespace ProjectPlanner
             if (files == null)
                 files = new Dictionary<string, FileBase>();
 
-            string filePath = DataFolder + name + ".asset";
+            string filePath = Path.Combine(DataFolder, name + ".asset");
             T file = null;
             if (files.ContainsKey(filePath))
-                file = (T)files[filePath];
+                file = (T) files[filePath];
 
             if (file == null)
             {
                 ValidateFolder(Path.GetDirectoryName(filePath));
-                file = (T)AssetDatabase.LoadAssetAtPath(filePath, typeof(T));
+                file = (T) AssetDatabase.LoadAssetAtPath(filePath, typeof(T));
 
                 bool makeNew = false;
                 if (file == null)
                 {
                     FixMissingScriptReference<T>(name);
 
-                    file = (T)AssetDatabase.LoadAssetAtPath(filePath, typeof(T));
+                    file = (T) AssetDatabase.LoadAssetAtPath(filePath, typeof(T));
                     if (file == null)
                         makeNew = true;
                 }
@@ -195,7 +174,6 @@ namespace ProjectPlanner
                 Task task = Tasks.I.Get(screenshot.TaskID);
                 if (task != null)
                 {
-
                     if (screenshots.ContainsKey(screenshot.ID))
                     {
                         texture2D = screenshots[screenshot.ID];
@@ -207,7 +185,7 @@ namespace ProjectPlanner
                     }
                     else
                     {
-                        string filePath = ScreenshotsFolder(task.ID) + screenshot.ID + ".png";
+                        string filePath = Path.Combine(ScreenshotsFolder(task.ID), screenshot.ID + ".png");
                         if (File.Exists(filePath))
                         {
                             texture2D = new Texture2D(1, 1);
@@ -222,6 +200,7 @@ namespace ProjectPlanner
 
             return texture2D;
         }
+
         public static void DeleteSceenshotTexture2D(Screenshot screenshot)
         {
             if (screenshot != null)
@@ -229,7 +208,7 @@ namespace ProjectPlanner
                 Task task = Tasks.I.Get(screenshot.TaskID);
                 if (task != null)
                 {
-                    string filePath = ScreenshotsFolder(task.ID) + screenshot.ID + ".png";
+                    string filePath = Path.Combine(ScreenshotsFolder(task.ID), screenshot.ID + ".png");
 
                     if (File.Exists(filePath))
                     {
@@ -250,6 +229,7 @@ namespace ProjectPlanner
                 }
             }
         }
+
         public static void MoveSceenshotToTmp(Screenshot screenshot)
         {
             if (screenshot != null)
@@ -257,7 +237,7 @@ namespace ProjectPlanner
                 Task task = Tasks.I.Get(screenshot.TaskID);
                 if (task != null)
                 {
-                    string filePath = ScreenshotsFolder(task.ID) + screenshot.ID + ".png";
+                    string filePath = Path.Combine(ScreenshotsFolder(task.ID), screenshot.ID + ".png");
 
                     if (File.Exists(filePath))
                     {
@@ -267,7 +247,7 @@ namespace ProjectPlanner
                             Directory.CreateDirectory(tmpFolder);
                         }
 
-                        string tmpFlePath = ScreenshotsFolder("tmp") + screenshot.ID + ".png";
+                        string tmpFlePath = Path.Combine(ScreenshotsFolder("tmp"), screenshot.ID + ".png");
                         File.Move(filePath, tmpFlePath);
 
                         if (screenshots == null)
@@ -281,6 +261,7 @@ namespace ProjectPlanner
             }
             //FileManager.DeleteSceenshotTexture2D(screenshot);
         }
+
         public static void MoveSceenshotToCopy(Screenshot screenshot, string newId)
         {
             if (screenshot != null)
@@ -288,7 +269,7 @@ namespace ProjectPlanner
                 Task task = Tasks.I.Get(screenshot.TaskID);
                 if (task != null)
                 {
-                    string filePath = ScreenshotsFolder(task.ID) + screenshot.ID + ".png";
+                    string filePath = Path.Combine(ScreenshotsFolder(task.ID), screenshot.ID + ".png");
 
                     if (File.Exists(filePath))
                     {
@@ -298,13 +279,14 @@ namespace ProjectPlanner
                             Directory.CreateDirectory(copyFolder);
                         }
 
-                        string copyFlePath = ScreenshotsFolder("copy") + newId + ".png";
+                        string copyFlePath = Path.Combine(ScreenshotsFolder("copy"), newId + ".png");
                         File.Copy(filePath, copyFlePath);
                     }
                 }
             }
             //FileManager.DeleteSceenshotTexture2D(screenshot);
         }
+
         public static void MoveSceenshotFromCopy(Screenshot copyScreenshot, Screenshot newScreenshot)
         {
             if (copyScreenshot != null && newScreenshot != null)
@@ -312,7 +294,7 @@ namespace ProjectPlanner
                 Task task = Tasks.I.Get(newScreenshot.TaskID);
                 if (task != null)
                 {
-                    string copyFilePath = ScreenshotsFolder("copy") + copyScreenshot.ID + ".png";
+                    string copyFilePath = Path.Combine(ScreenshotsFolder("copy"), copyScreenshot.ID + ".png");
 
                     if (File.Exists(copyFilePath))
                     {
@@ -322,16 +304,17 @@ namespace ProjectPlanner
                             Directory.CreateDirectory(taskFolder);
                         }
 
-                        string filePath = ScreenshotsFolder(task.ID) + newScreenshot.ID + ".png";
+                        string filePath = Path.Combine(ScreenshotsFolder(task.ID), newScreenshot.ID + ".png");
                         File.Copy(copyFilePath, filePath);
                     }
                 }
             }
             //FileManager.DeleteSceenshotTexture2D(screenshot);
         }
+
         private static void ClearSceenshotTmp()
         {
-            foreach (var folder in Directory.GetDirectories(ProjectFolderPath + "Screenshots/"))
+            foreach (var folder in Directory.GetDirectories(Path.Combine(ProjectFolderPath, "Screenshots")))
             {
                 foreach (var file in Directory.GetFiles(folder))
                 {
@@ -340,6 +323,7 @@ namespace ProjectPlanner
                         File.Delete(file);
                     }
                 }
+
                 if (Directory.GetFiles(folder).Length == 0)
                 {
                     Directory.Delete(folder);
@@ -350,14 +334,14 @@ namespace ProjectPlanner
         public static void FixMissingScriptReference<T>(string name) where T : FileBase
         {
             //DLL 2017.1+
-            UnityEngine.Object[] scripts = AssetDatabase.LoadAllAssetRepresentationsAtPath(RootFolder + "Editor/Project Planner.dll");
+            UnityEngine.Object[] scripts = AssetDatabase.LoadAllAssetRepresentationsAtPath(Path.Combine(RootFolder, "Editor", "Project Planner.dll"));
 
             foreach (UnityEngine.Object script in scripts)
             {
                 if (script.name == name)
                 {
-                    string assetFilePath = DataFolder + script.name + ".asset";
-                    string assetFilePathMeta = DataFolder + script.name + ".asset.meta";
+                    string assetFilePath = Path.Combine(DataFolder, script.name + ".asset");
+                    string assetFilePathMeta = Path.Combine(DataFolder, script.name + ".asset.meta");
                     if (File.Exists(assetFilePath) && File.Exists(assetFilePathMeta))
                     {
                         string[] metaInfo = File.ReadAllLines(assetFilePathMeta);
@@ -380,6 +364,7 @@ namespace ProjectPlanner
                                         assetLines[i] = "  m_Script: {fileID: " + file + ", guid: " + guid + ", type: 3}";
                                     }
                                 }
+
                                 File.Delete(assetFilePath);
                                 File.Delete(assetFilePathMeta);
                                 AssetDatabase.SaveAssets();
@@ -396,7 +381,7 @@ namespace ProjectPlanner
 
         public static string GetFileContent(string name)
         {
-            string filePath = DataFolder + name + ".asset";
+            string filePath = Path.Combine(DataFolder, name + ".asset");
 
             if (File.Exists(filePath))
             {
@@ -407,6 +392,7 @@ namespace ProjectPlanner
                 return "";
             }
         }
+
         public static void SaveAll(bool hard = false)
         {
             foreach (var file in files)
@@ -418,6 +404,7 @@ namespace ProjectPlanner
                         AssetDatabase.SaveAssets();
                 }
             }
+
             SaveAllDataToJson();
         }
 
@@ -446,20 +433,24 @@ namespace ProjectPlanner
         }
 
         private static Dictionary<string, Texture2D> icons;
+
         public static Texture2D GetIcon(string name)
         {
             if (icons == null)
                 icons = new Dictionary<string, Texture2D>();
 
-            string filePath = IconsFolder + name + ".png";
+            string filePath = null;
+
+            filePath = Path.Combine(IconsFolder, name + ".png");
+
             Texture2D icon = null;
             if (icons.ContainsKey(filePath))
                 icon = icons[filePath];
 
             if (icon == null)
             {
-                ValidateFolder(Path.GetDirectoryName(filePath));
-                icon = (Texture2D)AssetDatabase.LoadAssetAtPath(filePath, typeof(Texture2D));
+                if (!locator.IsPackage) ValidateFolder(Path.GetDirectoryName(filePath));
+                icon = (Texture2D) AssetDatabase.LoadAssetAtPath(filePath, typeof(Texture2D));
 
                 if (icons.ContainsKey(filePath))
                     icons[filePath] = icon;
@@ -482,6 +473,7 @@ namespace ProjectPlanner
 
             File.WriteAllText(JsonFile, builder.ToString());
         }
+
         public static void LoadAllDataFromJson()
         {
             if (File.Exists(JsonFile))
@@ -521,13 +513,14 @@ namespace ProjectPlanner
             {
                 if (c == '\n') n++;
             }
+
             return n + 1;
         }
 
         public static class Language
         {
-            private static readonly string LanguageFolder = RootFolder + "Editor/Languages/";
-            private static readonly string DefaultLanguageFile = LanguageFolder + "English.asset";
+            private static readonly string LanguageFolder = Path.Combine(RootFolder, "Editor", "Languages");
+            private static readonly string DefaultLanguageFile = Path.Combine(LanguageFolder, "English.asset");
 
             private static readonly Dictionary<string, LanguageData> languageFiles = new Dictionary<string, LanguageData>();
 
@@ -549,7 +542,7 @@ namespace ProjectPlanner
                 {
                     ValidateFolder(LanguageFolder);
 
-                    LanguageData language = (LanguageData)AssetDatabase.LoadAssetAtPath(LanguageFolder + name + ".asset", typeof(LanguageData));
+                    LanguageData language = (LanguageData) AssetDatabase.LoadAssetAtPath(Path.Combine(LanguageFolder, name + ".asset"), typeof(LanguageData));
 
                     if (language != null)
                     {
@@ -567,7 +560,7 @@ namespace ProjectPlanner
             {
                 ValidateFolder(LanguageFolder);
 
-                LanguageData language = (LanguageData)AssetDatabase.LoadAssetAtPath(DefaultLanguageFile, typeof(LanguageData));
+                LanguageData language = (LanguageData) AssetDatabase.LoadAssetAtPath(DefaultLanguageFile, typeof(LanguageData));
 
                 if (language == null)
                 {
@@ -591,7 +584,7 @@ namespace ProjectPlanner
 
                 List<string> filesNames = new List<string>();
 
-                foreach (var guid in AssetDatabase.FindAssets(string.Format("t:{0}", typeof(LanguageData)), new string[] { folder }))
+                foreach (var guid in AssetDatabase.FindAssets(string.Format("t:{0}", typeof(LanguageData)), new string[] {folder}))
                 {
                     filesNames.Add(Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)));
                 }
@@ -613,6 +606,7 @@ namespace ProjectPlanner
                     return paths;
                 }
             }
+
             return paths;
         }
     }
