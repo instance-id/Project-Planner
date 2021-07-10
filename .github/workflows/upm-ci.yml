@@ -2,7 +2,7 @@ name: upm-ci
 on:
   push:
     branches:
-    - main
+    - master
 jobs:
   split-upm:
     name: split upm branch
