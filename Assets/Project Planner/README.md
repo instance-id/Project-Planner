@@ -13,7 +13,11 @@ I don't plan to actively work on it anymore, but still feel free to contact me o
 # How to install
 Before installing Project Planner, make sure asset serialization mode is set to “Force Text”. You can find the setting here “Edit->Project Settings->Editor->Asset Serialization”.
 
-### Install via Unity Package Manager (UPM) "instance.id.projectplanner":"https://github.com/instance-id/Project-Planner.git#upm",
+| Install via Unity Package Manager (UPM) | 
+|---|
+| Add either of these to project manifest.json file | 
+| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git?path=Assets/Project Planner", |   
+| "id.instance.projectplanner":"https://github.com/instance-id/Project-Planner.git#upm",|   
 
 To install Project Planner you can either download the entire project from GitHub and copy the Project Planner root folder into your own Assets folder. You can also (recommended) download the [`Project Planner 1.5.unitypackage`](https://github.com/LeviMooreDev/Project-Planner/blob/master/Project%20Planner%201.5.unitypackage) file and import that into your unity project.
 
