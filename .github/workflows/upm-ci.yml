@@ -18,3 +18,14 @@ jobs:
         git push -u origin upm
       env:
         PKG_ROOT: Assets/Project Planner
+
+  tag_upm:
+    needs: split-upm
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: Klemensas/action-autotag@stable
+      with:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        package_root: "Assets/Project Planner"
+        tag_prefix: "v"
