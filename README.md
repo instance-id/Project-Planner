@@ -18,6 +18,10 @@ I don't plan to actively work on it anymore, but still feel free to contact me o
 # How to install
 Before installing Project Planner, make sure asset serialization mode is set to “Force Text”. You can find the setting here “Edit->Project Settings->Editor->Asset Serialization”.
 
+|Install via OpenUPM||
+|---|--- |
+|openupm add id.instance.projectplanner | [link](https://openupm.com/packages/id.instance.projectplanner/)|
+
 | Install via Unity Package Manager (UPM) |
 |---|
 | Add either of these to project manifest.json file |
